@@ -1,16 +1,18 @@
 package com.example.schedulerdemo.config;
 
-import com.example.schedulerdemo.service.CustomerBrandDetailsService;
-import com.example.schedulerdemo.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.*;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class ScheduledTasks {
@@ -20,14 +22,27 @@ public class ScheduledTasks {
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     @Autowired
-    NotificationService sendNotification;
+    private JobLauncher jobLauncher;
 
     @Autowired
-    CustomerBrandDetailsService customerBrandDetailsService;
+    private Job sendNotificationJob;
+
 
     @Scheduled(cron = "0 * * * * ?")
-    public void scheduleTaskWithCronExpression() {
+    public void scheduleTaskWithCronExpression() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
         logger.info("Cron Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
+        try {
+            JobParameters jobParameters = new JobParametersBuilder()
+                    .addLong("currentTime", System.currentTimeMillis())
+                    .toJobParameters();
+            JobExecution jobExecution = jobLauncher.run(sendNotificationJob, jobParameters);
+            logger.info("Job Status : {}", jobExecution.getStatus());
+            logger.info("Job completed successfully");
+        } catch (JobExecutionException e) {
+            logger.error("Job failed", e);
+        }
+
+
         /*
 
         sendNotification.sendNotification("27746422852", 1L);
