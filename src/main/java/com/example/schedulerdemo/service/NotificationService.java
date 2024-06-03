@@ -20,12 +20,12 @@ public class NotificationService {
     @Autowired
     DesignScheduleEventsService designScheduleEventsService;
 
-    public void sendNotification(String number) {
-        if(ObjectUtils.isEmpty(number)/* || ObjectUtils.isEmpty(id)*/){
+    public void sendNotification(String number, Long id {
+        if(ObjectUtils.isEmpty(number) || ObjectUtils.isEmpty(id)){
             System.out.println("Number or Id is empty or null");
             return;
         }
-        System.out.println("Started execution for number "+  number /*+ " , brandId : " + id*/);
+        System.out.println("Started execution for number "+  number + " , brandId : " + id);
         Optional<CustomerBrandDetails> optionalBrandDetails = customerBrandDetailsService.getLatestActiveBrandByPrimaryMobileNumber(number);
         DesignScheduleEvents designScheduleEventObject = new DesignScheduleEvents();
         if (!optionalBrandDetails.isEmpty() && optionalBrandDetails.isPresent()) {

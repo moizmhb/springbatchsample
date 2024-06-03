@@ -23,3 +23,8 @@ then
 
 mvn spring-boot:run
 ```
+
+```
+
+1. You can call the scheduling method from the `ScheduledTasks` class inside the `scheduleTaskWithCronExpression` method.
+```

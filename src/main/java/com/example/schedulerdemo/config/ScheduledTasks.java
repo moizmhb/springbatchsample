@@ -28,13 +28,13 @@ public class ScheduledTasks {
     @Scheduled(cron = "0 * * * * ?")
     public void scheduleTaskWithCronExpression() {
         logger.info("Cron Task :: Execution Time - {}", dateTimeFormatter.format(LocalDateTime.now()));
-        /*sendNotification.sendNotification("8989871887");
-        sendNotification.sendNotification("9039107752");
-        sendNotification.sendNotification("27746422852");
-        sendNotification.sendNotification("15526085550");
-        sendNotification.sendNotification("82025091474");
-        sendNotification.sendNotification("36023215348");
-        sendNotification.sendNotification("26764692960");*/
+        /*
+
+        sendNotification.sendNotification("27746422852", 1L);
+        sendNotification.sendNotification("15526085550",2L);
+        sendNotification.sendNotification("82025091474",3L);
+        sendNotification.sendNotification("36023215348",4L);
+        sendNotification.sendNotification("26764692960",5L);*/
     }
 
 }
