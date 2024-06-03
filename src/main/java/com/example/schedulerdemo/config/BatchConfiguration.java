@@ -12,6 +12,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcPagingItemReader;
+import org.springframework.batch.item.database.Order;
 import org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableBatchProcessing
@@ -58,7 +61,7 @@ public class BatchConfiguration {
 
     @Bean
     public JdbcPagingItemReader<CustomerBrandDetails> itemReader() {
-        JdbcPagingItemReader<CustomerBrandDetails> reader = new JdbcPagingItemReader<>();
+       /* JdbcPagingItemReader<CustomerBrandDetails> reader = new JdbcPagingItemReader<>();
         reader.setDataSource(dataSource);
         reader.setPageSize(100);
         reader.setRowMapper(new BeanPropertyRowMapper<>(CustomerBrandDetails.class));
@@ -68,12 +71,26 @@ public class BatchConfiguration {
         queryProvider.setSelectClause("SELECT id, primary_mobile_number, automated_design_freq, design_next_date, created_at, status");
         queryProvider.setFromClause("FROM customer_brand_details");
         queryProvider.setWhereClause("WHERE status = TRUE");
-        queryProvider.setSortKey("created_at");
+        queryProvider.setSortKey("created_at");*/
+        JdbcPagingItemReader<CustomerBrandDetails> reader = new JdbcPagingItemReader<>();
+        reader.setDataSource(dataSource);
+        reader.setPageSize(10);
+        reader.setRowMapper(new BeanPropertyRowMapper<>(CustomerBrandDetails.class));
+
+        SqlPagingQueryProviderFactoryBean queryProvider = new SqlPagingQueryProviderFactoryBean();
+        queryProvider.setDataSource(dataSource);
+        queryProvider.setSelectClause("SELECT id, primary_mobile_number, automated_design_freq, design_next_date, created_at, status");
+        queryProvider.setFromClause("FROM customer_brand_details c");
+        queryProvider.setWhereClause("WHERE status = TRUE AND c.created_at = (SELECT MAX(created_at) FROM customer_brand_details WHERE primary_mobile_number = c.primary_mobile_number)");
+
+        Map<String, Order> sortKeys = new HashMap<>();
+        sortKeys.put("created_at", Order.DESCENDING);
+        queryProvider.setSortKeys(sortKeys);
 
         try {
             reader.setQueryProvider(queryProvider.getObject());
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return reader;
     }
@@ -90,7 +107,7 @@ public class BatchConfiguration {
                 System.out.println("log notification has not been sent to brandId");
                 return createDesignScheduleEventObject(brandDetails.getId(), false);
             }
-        };
+        };//53368472717
     }
 
     @Bean
