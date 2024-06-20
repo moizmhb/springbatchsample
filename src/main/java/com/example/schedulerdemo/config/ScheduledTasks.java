@@ -42,14 +42,6 @@ public class ScheduledTasks {
             logger.error("Job failed", e);
         }
 
-
-        /*
-
-        sendNotification.sendNotification("27746422852", 1L);
-        sendNotification.sendNotification("15526085550",2L);
-        sendNotification.sendNotification("82025091474",3L);
-        sendNotification.sendNotification("36023215348",4L);
-        sendNotification.sendNotification("26764692960",5L);*/
     }
 
 }

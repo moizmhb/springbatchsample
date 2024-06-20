@@ -45,13 +45,13 @@ public class BatchConfiguration {
     @Bean
     public Job sendNotificationJob() {
         return new JobBuilder("sendNotificationJob", jobRepository)
-                .start(step1())
+                .start(notifyDesignStep())
                 .build();
     }
 
     @Bean
-    public Step step1() {
-        return new StepBuilder("step1", jobRepository)
+    public Step notifyDesignStep() {
+        return new StepBuilder("NotifyDesign", jobRepository)
                 .<CustomerBrandDetails, DesignScheduleEvents>chunk(100, transactionManager)
                 .reader(itemReader())
                 .processor(itemProcessor())
@@ -61,17 +61,6 @@ public class BatchConfiguration {
 
     @Bean
     public JdbcPagingItemReader<CustomerBrandDetails> itemReader() {
-       /* JdbcPagingItemReader<CustomerBrandDetails> reader = new JdbcPagingItemReader<>();
-        reader.setDataSource(dataSource);
-        reader.setPageSize(100);
-        reader.setRowMapper(new BeanPropertyRowMapper<>(CustomerBrandDetails.class));
-
-        SqlPagingQueryProviderFactoryBean queryProvider = new SqlPagingQueryProviderFactoryBean();
-        queryProvider.setDataSource(dataSource);
-        queryProvider.setSelectClause("SELECT id, primary_mobile_number, automated_design_freq, design_next_date, created_at, status");
-        queryProvider.setFromClause("FROM customer_brand_details");
-        queryProvider.setWhereClause("WHERE status = TRUE");
-        queryProvider.setSortKey("created_at");*/
         JdbcPagingItemReader<CustomerBrandDetails> reader = new JdbcPagingItemReader<>();
         reader.setDataSource(dataSource);
         reader.setPageSize(10);
@@ -107,21 +96,17 @@ public class BatchConfiguration {
                 System.out.println("log notification has not been sent to brandId");
                 return createDesignScheduleEventObject(brandDetails.getId(), false);
             }
-        };//53368472717
+        };
     }
 
     @Bean
     public ItemWriter<DesignScheduleEvents> itemWriter() {
-        System.out.println("items : ");
         return items -> items.forEach(designScheduleEventsService::save);
     }
 
     private boolean shouldSendNotification(CustomerBrandDetails brandDetails) {
         LocalDate designNextDate = brandDetails.getDesignNextDate().toLocalDate();
         LocalDate today = LocalDate.now();
-        System.out.println("Today :  " + designNextDate.isEqual(today));
-        System.out.println("AlternateDays : "  + "AlternateDays".equalsIgnoreCase(brandDetails.getAutomatedDesignFreq()));
-        System.out.println(brandDetails.getAutomatedDesignFreq());
         return (designNextDate.isEqual(today) && "AlternateDays".equalsIgnoreCase(brandDetails.getAutomatedDesignFreq())) || "Daily".equalsIgnoreCase(brandDetails.getAutomatedDesignFreq());
     }
 
